@@ -1,0 +1,189 @@
+<!-- LightCloud theme picker: paste this whole block right before </head> in index.html, plans.html, payment.html and terms.html -->
+<script>
+/* LightCloud theme customizer — drop-in, no dependencies.
+   Add to EVERY page, right before </head>:
+   <script src="/theme.js"></script>
+   Saves choice in localStorage, so it follows the visitor across all pages. */
+(function () {
+  "use strict";
+  var KEY = "lc-theme", KEY_CUSTOM = "lc-theme-custom", DEFAULT = "neon-blue";
+
+  // id, name, description, main, dark, light
+  var THEMES = [
+    ["neon-blue", "Neon Blue", "Default futuristic", "#3b8cff", "#1b49c9", "#7db8ff"],
+    ["tvm-panel", "TVM Panel", "Classic dark blue", "#4f8cff", "#1e3a8a", "#8fb4ff"],
+    ["arix", "Arix", "Slate & indigo", "#7c6cf2", "#312e81", "#b4a8ff"],
+    ["nebula", "Nebula", "Deep space purple", "#a855f7", "#4c1d95", "#f0599a"],
+    ["cyber-cyan", "Cyber Cyan", "Electric teal", "#06b6d4", "#0e4f5c", "#67e8f9"],
+    ["ultra-violet", "Ultra Violet", "Rich purple", "#8b5cf6", "#3b1d8f", "#c084fc"],
+    ["synthwave", "Synthwave", "Retro neon", "#e879f9", "#5b2a86", "#22d3ee"],
+    ["crimson", "Crimson", "Hot red", "#f43f5e", "#7f1d2d", "#fb923c"],
+    ["lava", "Lava", "Red to amber", "#f97316", "#7c1d1d", "#fbbf24"],
+    ["sunset", "Sunset", "Orange glow", "#fb923c", "#5a3516", "#f43f5e"],
+    ["gold-rush", "Gold Rush", "Gold on green-black", "#eab308", "#3a3510", "#a3e635"],
+    ["matrix", "Matrix", "Hacker green", "#22c55e", "#064e3b", "#84e63a"],
+    ["aurora", "Aurora", "Northern lights", "#2dd4bf", "#0f4a45", "#a78bfa"],
+    ["deep-ocean", "Deep Ocean", "Sea blue", "#0ea5e9", "#073b5c", "#2dd4bf"],
+    ["midnight", "Midnight", "Dark indigo", "#4f46e5", "#1e1b4b", "#60a5fa"],
+    ["sakura", "Sakura", "Soft pink", "#f472b6", "#5b2144", "#f5d0fe"],
+    ["ice", "Ice", "Cool silver", "#94a3b8", "#2b3340", "#bae6fd"],
+    ["mono", "Mono", "Black & white", "#d4d4d8", "#27272a", "#ffffff"]
+  ].map(function (t) {
+    return { id: t[0], name: t[1], desc: t[2], a: t[3], b: t[4], c: t[5] };
+  });
+
+  function rgb(hex) {
+    hex = hex.replace("#", "");
+    if (hex.length === 3) hex = hex.replace(/(.)/g, "$1$1");
+    var n = parseInt(hex, 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function toHex(c) {
+    return "#" + c.map(function (v) {
+      return Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0");
+    }).join("");
+  }
+  function mix(h1, h2, t) {
+    var a = rgb(h1), b = rgb(h2);
+    return toHex([0, 1, 2].map(function (i) { return a[i] + (b[i] - a[i]) * t; }));
+  }
+  function rgba(h, al) { var c = rgb(h); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + al + ")"; }
+
+  function customTheme(hex) {
+    return { id: "custom", name: "Custom", a: hex, b: mix(hex, "#000000", 0.55), c: mix(hex, "#ffffff", 0.45) };
+  }
+  function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+
+  function current() {
+    var id = get(KEY) || DEFAULT;
+    if (id === "custom") return customTheme(get(KEY_CUSTOM) || "#3b8cff");
+    for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return THEMES[i];
+    return THEMES[0];
+  }
+
+  // Overrides the site's hard-coded blues, so no edits to existing CSS are needed.
+  function css(t) {
+    var A = t.a, B = t.b, C = t.c;
+    var bg1 = mix(A, "#000000", 0.97), bg2 = mix(A, "#000000", 0.92), bg3 = mix(A, "#000000", 0.95);
+    return [
+      ":root{--ac:" + A + "!important;--ac2:" + C + "!important;--line:" + rgba(A, .25) + "!important;--card:" + rgba(A, .12) + "!important}",
+      "body{background:linear-gradient(180deg," + bg1 + " 0%," + bg2 + " 60%," + bg3 + " 100%)!important}",
+      ".btn,.dock a.on{background:linear-gradient(135deg," + A + "," + B + ")!important;box-shadow:0 6px 24px " + rgba(A, .45) + ",inset 0 1px 0 rgba(255,255,255,.3)!important;color:#fff!important}",
+      ".btn.ghost{background:rgba(255,255,255,.06)!important;box-shadow:none!important}",
+      ".dock a{color:" + C + "}.dock a:hover{color:#fff}",
+      ".card{background:linear-gradient(160deg," + rgba(A, .16) + ",rgba(255,255,255,.04))!important;border-color:" + rgba(A, .25) + "!important}",
+      ".plan.hot,.card.hot{background:linear-gradient(160deg," + rgba(A, .42) + "," + rgba(B, .25) + ")!important;border-color:" + A + "!important;box-shadow:0 0 50px " + rgba(A, .3) + "!important}",
+      ".plan:hover{border-color:" + A + "!important}",
+      ".ram,.handle{color:" + C + "!important}",
+      ".off{background:" + rgba(A, .25) + "!important;color:" + C + "!important}",
+      ".tags span{border-color:" + rgba(A, .35) + "!important;background:" + rgba(A, .18) + "!important;color:" + C + "!important}",
+      ".logo span,.brand span{color:" + A + "!important}",
+      ".owner img{border-color:" + rgba(A, .5) + "!important;box-shadow:0 0 40px " + rgba(A, .45) + "!important}",
+      ".orb{background:linear-gradient(200deg," + A + " 0%," + B + " 100%)!important}",
+      "@keyframes lcpulse{0%,100%{filter:drop-shadow(0 0 16px " + rgba(A, .45) + ")}50%{filter:drop-shadow(0 0 40px " + rgba(C, .95) + ")}}",
+      "nav,footer{border-color:" + rgba(A, .22) + "!important}"
+    ].join("\n");
+  }
+
+  function apply(t) {
+    var s = document.getElementById("lc-theme-css");
+    if (!s) {
+      s = document.createElement("style");
+      s.id = "lc-theme-css";
+      (document.head || document.documentElement).appendChild(s);
+    }
+    s.textContent = css(t);
+    var root = document.documentElement.style;
+    root.setProperty("--lc-a", t.a); root.setProperty("--lc-b", t.b); root.setProperty("--lc-c", t.c);
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", mix(t.a, "#000000", 0.93));
+  }
+
+  // Apply immediately (script sits in <head>) so there is no colour flash.
+  var active = current();
+  apply(active);
+
+  // ---------- Picker UI ----------
+  var UI = [
+    "#lcp-btn{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:9998;width:56px;height:56px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--lc-a),var(--lc-b));box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.15) inset;transition:transform .2s}",
+    "#lcp-btn:hover{transform:scale(1.08) rotate(-8deg)}#lcp-btn svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}",
+    "#lcp-panel{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:9999;width:min(420px,calc(100vw - 32px));max-height:min(70vh,640px);overflow:auto;padding:18px;border-radius:20px;background:#070a14;border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 60px rgba(0,0,0,.65);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#e8ecf8;display:none;scrollbar-width:thin;scrollbar-color:var(--lc-a) transparent}",
+    "#lcp-panel.open{display:block;animation:lcpIn .18s ease-out}@keyframes lcpIn{from{opacity:0;transform:translateY(8px)}}",
+    "#lcp-panel h4{margin:0;font-size:12px;letter-spacing:.25em;color:var(--lc-c)}",
+    "#lcp-panel .act{margin:6px 0 14px;font-size:14px;color:#9aa4c0}",
+    "#lcp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}",
+    ".lcp-card{cursor:pointer;text-align:left;padding:10px;border-radius:14px;background:#0d1120;border:1px solid rgba(255,255,255,.1);color:inherit;font:inherit;transition:transform .15s,border-color .15s}",
+    ".lcp-card:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.3)}.lcp-card.on{border:2px solid #fff;box-shadow:0 0 18px rgba(255,255,255,.2)}",
+    ".lcp-sw{height:34px;border-radius:9px;margin-bottom:8px;border:1px solid rgba(255,255,255,.12)}",
+    ".lcp-card b{display:block;font-size:14px}.lcp-card span{font-size:12px;color:#8c96b3}",
+    "#lcp-foot{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);font-size:14px;color:#9aa4c0}",
+    "#lcp-color{width:54px;height:34px;padding:0;border:0;border-radius:8px;background:none;cursor:pointer}",
+    "#lcp-reset{margin-left:auto;padding:8px 16px;border-radius:10px;border:1px solid var(--lc-a);background:transparent;color:var(--lc-c);cursor:pointer;font:inherit}",
+    "#lcp-reset:hover{background:rgba(255,255,255,.08)}"
+  ].join("\n");
+
+  function swatch(t) {
+    return "linear-gradient(120deg," + mix(t.a, "#000000", 0.7) + "," + t.a + "," + t.c + ")";
+  }
+
+  function build() {
+    if (document.getElementById("lcp-btn")) return;
+    var st = document.createElement("style");
+    st.textContent = UI;
+    document.head.appendChild(st);
+
+    var btn = document.createElement("button");
+    btn.id = "lcp-btn";
+    btn.setAttribute("aria-label", "Change theme");
+    btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.2 0 2-.8 2-1.8 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/></svg>';
+
+    var panel = document.createElement("div");
+    panel.id = "lcp-panel";
+    panel.innerHTML = '<h4>THEMES</h4><div class="act" id="lcp-act"></div><div id="lcp-grid"></div>' +
+      '<div id="lcp-foot"><label for="lcp-color">Custom accent</label><input type="color" id="lcp-color"><button id="lcp-reset">Reset</button></div>';
+
+    document.body.appendChild(panel);
+    document.body.appendChild(btn);
+
+    var grid = panel.querySelector("#lcp-grid"), act = panel.querySelector("#lcp-act"), pick = panel.querySelector("#lcp-color");
+
+    THEMES.forEach(function (t) {
+      var c = document.createElement("button");
+      c.className = "lcp-card"; c.dataset.id = t.id;
+      c.innerHTML = '<div class="lcp-sw" style="background:' + swatch(t) + '"></div><b>' + t.name + "</b><span>" + t.desc + "</span>";
+      c.onclick = function () { set(KEY, t.id); refresh(); };
+      grid.appendChild(c);
+    });
+
+    function refresh() {
+      active = current();
+      apply(active);
+      act.textContent = "Active: " + active.name;
+      pick.value = active.a;
+      Array.prototype.forEach.call(grid.children, function (c) {
+        c.classList.toggle("on", c.dataset.id === active.id);
+      });
+    }
+
+    pick.addEventListener("input", function () {
+      set(KEY, "custom"); set(KEY_CUSTOM, pick.value);
+      active = customTheme(pick.value); apply(active);
+      act.textContent = "Active: Custom";
+      Array.prototype.forEach.call(grid.children, function (c) { c.classList.remove("on"); });
+    });
+    panel.querySelector("#lcp-reset").onclick = function () { del(KEY); del(KEY_CUSTOM); refresh(); };
+    btn.onclick = function (e) { e.stopPropagation(); panel.classList.toggle("open"); };
+    document.addEventListener("click", function (e) {
+      if (!panel.contains(e.target) && e.target !== btn) panel.classList.remove("open");
+    });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") panel.classList.remove("open"); });
+    window.addEventListener("storage", refresh); // keep other open tabs in sync
+    refresh();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
+  else build();
+})();
+</script>
